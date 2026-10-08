@@ -1,0 +1,52 @@
+name: testes
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  testes:
+    runs-on: ${{ matrix.so }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        so: [ubuntu-latest, windows-latest, macos-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # O juiz e a DEFINICAO: a melhor rota e a melhor, e saber que ela e a melhor
+      # exige olhar todas as (n-1)! outras.
+      #
+      # E ha um SEGUNDO metodo exato, o de Held e Karp de 1962, que percorre um
+      # espaco completamente diferente: pares de (conjunto ja visitado, cidade
+      # atual) em vez de ordens. Os dois precisam dar o mesmo custo.
+      - name: testes
+        run: dotnet test testes/Caixeiro.Testes/Caixeiro.Testes.csproj -c Release --nologo -v q
+
+      - name: as heuristicas contra a definicao
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- definicao
+
+      - name: a razao contra o otimo no plano sorteado
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- razao
+
+      - name: o circulo, que eu montei para enganar e nao engana
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- circulo
+
+      - name: a propriedade do 2-opt, que a rota nao cruza
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- cruzamento
+
+      - name: a cidade de partida
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- partida
+
+      - name: as heuristicas nos mapas grandes
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- grande
+
+      - name: o custo dos dois metodos exatos
+        run: dotnet run --project ferramentas/Medidor/Medidor.csproj -c Release -- custo
